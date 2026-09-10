@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Photo Editor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<base target="_blank">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
+        <div class="bg-blob blob-4"></div>
+        <div class="bg-blob blob-5"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+
+        <!-- Hero Section -->
+        <header class="hero-section">
+            <div class="hero-badge">
+                <span class="badge-icon">&#10024;</span>
+                <span>AI POWERED IMAGE EDITING</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="title-icon">&#127912;</span>
+                <span class="gradient-text">AI Photo Editor</span>
+                <span class="title-icon">&#127912;</span>
+            </h1>
+            <p class="hero-subtitle">Transform your images with powerful OpenCV image processing</p>
+            <p class="hero-description">Edit, enhance and transform your images using powerful image processing techniques.</p>
+            <div class="hero-decoration">
+                <div class="decoration-ring ring-1"></div>
+                <div class="decoration-ring ring-2"></div>
+                <div class="decoration-dot dot-1"></div>
+                <div class="decoration-dot dot-2"></div>
+                <div class="decoration-dot dot-3"></div>
+            </div>
+        </header>
+
+        <!-- Editor Card -->
+        <section class="editor-card">
+            <form method="POST" enctype="multipart/form-data" id="editorForm">
+
+                <!-- Upload Area -->
+                <div class="upload-section">
+                    <h2 class="section-title">Upload Your Image</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="file" name="file" accept="image/png,image/jpg,image/jpeg,image/webp" required>
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            <p class="upload-text">Drag & Drop your image here</p>
+                            <p class="upload-or">or click to browse</p>
+                            <p class="upload-formats">PNG &#8226; JPG &#8226; JPEG &#8226; WEBP</p>
+                        </div>
+                        <div class="upload-selected" id="uploadSelected">
+                            <div class="selected-icon">&#9989;</div>
+                            <p class="selected-text">Image selected: <span id="selectedFilename"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Selection -->
+                <div class="filter-section">
+                    <h2 class="section-title">Choose Image Filter</h2>
+                    <div class="select-wrapper">
+                        <select id="filter" name="filter" onchange="toggleParams()" required>
+                            <option value="" disabled selected>Select a filter...</option>
+                            <option value="grayscale">&#127912; Grayscale</option>
+                            <option value="binary">&#9899; Binary</option>
+                            <option value="hsv">&#127752; RGB to HSV</option>
+                            <option value="blur">&#127787; Blur</option>
+                            <option value="brightness">&#9728; Brightness</option>
+                            <option value="edges">&#128269; Edge Detection</option>
+                            <option value="sharpen">&#10024; Sharpen</option>
+                            <option value="dilation">&#10133; Dilation</option>
+                            <option value="erosion">&#10134; Erosion</option>
+                            <option value="opening">&#128260; Opening</option>
+                            <option value="closing">&#128274; Closing</option>
+                        </select>
+                        <div class="select-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blur Parameters -->
+                <div id="blurParams" class="params-section">
+                    <div class="params-card">
+                        <div class="params-header">
+                            <span class="params-icon">&#127787;</span>
+                            <h3>Blur Amount</h3>
+                        </div>
+                        <div class="params-body">
+                            <label for="blur_amount">Kernel Size</label>
+                            <div class="range-wrapper">
+                                <input type="range" id="blur_amount" name="blur_amount" min="1" max="21" step="2" value="5" oninput="updateRangeValue(this, 'blurValue')">
+                                <span class="range-value" id="blurValue">5</span>
+                            </div>
+                            <div class="range-labels">
+                                <span>1 (Subtle)</span>
+                                <span>21 (Heavy)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Brightness Parameters -->
+                <div id="brightnessParams" class="params-section">
+                    <div class="params-card">
+                        <div class="params-header">
+                            <span class="params-icon">&#9728;</span>
+                            <h3>Brightness Factor</h3>
+                        </div>
+                        <div class="params-body">
+                            <label for="brightness_factor">Intensity</label>
+                            <div class="range-wrapper">
+                                <input type="range" id="brightness_factor" name="brightness_factor" min="0.5" max="2.0" step="0.1" value="1.0" oninput="updateRangeValue(this, 'brightnessValue')">
+                                <span class="range-value" id="brightnessValue">1.0</span>
+                            </div>
+                            <div class="range-labels">
+                                <span>0.5 Darker</span>
+                                <span>1.0 Normal</span>
+                                <span>2.0 Brighter</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Morphological Parameters -->
+                <div id="morphologyParams" class="params-section">
+                    <div class="params-card">
+                        <div class="params-header">
+                            <span class="params-icon">&#9881;</span>
+                            <h3>Morphological Settings</h3>
+                        </div>
+                        <div class="params-body">
+                            <div class="param-row">
+                                <label for="kernel_size">Kernel Size</label>
+                                <div class="select-wrapper small">
+                                    <select id="kernel_size" name="kernel_size">
+                                        <option value="3">3 &#215; 3</option>
+                                        <option value="5" selected>5 &#215; 5</option>
+                                        <option value="7">7 &#215; 7</option>
+                                    </select>
+                                    <div class="select-arrow">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="6 9 12 15 18 9"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="param-row">
+                                <label for="iterations">Iterations</label>
+                                <div class="range-wrapper">
+                                    <input type="range" id="iterations" name="iterations" min="1" max="5" step="1" value="1" oninput="updateRangeValue(this, 'iterationsValue')">
+                                    <span class="range-value" id="iterationsValue">1</span>
+                                </div>
+                                <div class="range-labels">
+                                    <span>1</span>
+                                    <span>5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="apply-btn" id="applyBtn">
+                    <span class="btn-icon">&#10024;</span>
+                    <span class="btn-text">Apply Filter</span>
+                    <span class="btn-loading">
+                        <span class="spinner"></span>
+                        <span>Processing Image...</span>
+                    </span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Error Message -->
+        {% if error %}
+        <div class="error-message">
+            <div class="error-icon">&#9888;</div>
+            <div class="error-content">
+                <p class="error-title">Something went wrong</p>
+                <p class="error-text">{{ error }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Results Section -->
+        {% if original and processed %}
+        <section class="results-section">
+            <div class="results-header">
+                <h2 class="results-title">&#10024; Editing Results</h2>
+                <p class="results-subtitle">Compare your original and processed image</p>
+            </div>
+
+            <div class="results-grid">
+                <!-- Original Image Card -->
+                <div class="result-card original-card">
+                    <div class="card-badge original-badge">ORIGINAL</div>
+                    <div class="card-image-wrapper">
+                        <img src="{{ url_for('static', filename='uploads/' + original) }}" alt="Original Image" class="result-image">
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-label">Original Upload</span>
+                    </div>
+                </div>
+
+                <!-- Processed Image Card -->
+                <div class="result-card processed-card">
+                    <div class="card-badge processed-badge">PROCESSED</div>
+                    <div class="card-image-wrapper">
+                        <img src="{{ url_for('static', filename='output/' + processed) }}" alt="Processed Image" class="result-image">
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-label">PROCESSED &#8212; {{ filter_applied }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <div class="download-section">
+                <a href="{{ url_for('download', filename=processed) }}" class="download-btn">
+                    <span class="btn-icon">&#11015;</span>
+                    <span>Download Image</span>
+                </a>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Statistics Section -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">11+</div>
+                    <div class="stat-label">Image Filters</div>
+                    <div class="stat-glow"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">OpenCV</div>
+                    <div class="stat-label">Processing Engine</div>
+                    <div class="stat-glow"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">Fast</div>
+                    <div class="stat-label">Image Processing</div>
+                    <div class="stat-glow"></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Local Processing</div>
+                    <div class="stat-glow"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section">
+            <div class="features-header">
+                <h2 class="features-title">Powerful Image Processing</h2>
+                <p class="features-subtitle">Explore all the filters available in our AI Photo Editor</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">&#127912;</div>
+                    <h3>Grayscale</h3>
+                    <p>Convert images into grayscale.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#9899;</div>
+                    <h3>Binary</h3>
+                    <p>Convert images into black and white.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127752;</div>
+                    <h3>RGB to HSV</h3>
+                    <p>Convert RGB images to HSV color space.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#127787;</div>
+                    <h3>Blur</h3>
+                    <p>Smooth images using Gaussian blur.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#9728;</div>
+                    <h3>Brightness</h3>
+                    <p>Adjust image brightness.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128269;</div>
+                    <h3>Edge Detection</h3>
+                    <p>Detect edges using Canny.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#10024;</div>
+                    <h3>Sharpen</h3>
+                    <p>Enhance image details.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#10133;</div>
+                    <h3>Dilation</h3>
+                    <p>Expand bright regions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#10134;</div>
+                    <h3>Erosion</h3>
+                    <p>Shrink bright regions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128260;</div>
+                    <h3>Opening</h3>
+                    <p>Remove small noise.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">&#128274;</div>
+                    <h3>Closing</h3>
+                    <p>Fill small gaps.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <p>AI Photo Editor &mdash; Built with Flask, OpenCV &amp; NumPy</p>
+        </footer>
+    </div>
+
+    <script>
+        // Toggle parameter sections based on filter selection
+        function toggleParams() {
+            const filter = document.getElementById('filter').value;
+            const blurParams = document.getElementById('blurParams');
+            const brightnessParams = document.getElementById('brightnessParams');
+            const morphologyParams = document.getElementById('morphologyParams');
+
+            // Hide all first
+            blurParams.classList.remove('active');
+            brightnessParams.classList.remove('active');
+            morphologyParams.classList.remove('active');
+
+            // Show relevant section
+            if (filter === 'blur') {
+                blurParams.classList.add('active');
+            } else if (filter === 'brightness') {
+                brightnessParams.classList.add('active');
+            } else if (['dilation', 'erosion', 'opening', 'closing'].includes(filter)) {
+                morphologyParams.classList.add('active');
+            }
+        }
+
+        // Update range value display
+        function updateRangeValue(input, outputId) {
+            document.getElementById(outputId).textContent = input.value;
+        }
+
+        // Upload area interactions
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('file');
+        const uploadContent = uploadArea.querySelector('.upload-content');
+        const uploadSelected = document.getElementById('uploadSelected');
+        const selectedFilename = document.getElementById('selectedFilename');
+
+        // Click to browse
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target !== fileInput) {
+                fileInput.click();
+            }
+        });
+
+        // File selection
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                selectedFilename.textContent = fileInput.files[0].name;
+                uploadContent.style.display = 'none';
+                uploadSelected.style.display = 'flex';
+                uploadArea.classList.add('has-file');
+            }
+        });
+
+        // Drag and drop
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('drag-over');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('drag-over');
+            }, false);
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                selectedFilename.textContent = files[0].name;
+                uploadContent.style.display = 'none';
+                uploadSelected.style.display = 'flex';
+                uploadArea.classList.add('has-file');
+            }
+        }, false);
+
+        // Form submission loading state
+        const editorForm = document.getElementById('editorForm');
+        const applyBtn = document.getElementById('applyBtn');
+
+        editorForm.addEventListener('submit', (e) => {
+            if (fileInput.files.length === 0) {
+                e.preventDefault();
+                uploadArea.classList.add('shake');
+                setTimeout(() => uploadArea.classList.remove('shake'), 500);
+                return;
+            }
+            applyBtn.classList.add('loading');
+            applyBtn.disabled = true;
+        });
+
+        // Scroll reveal animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.editor-card, .stat-card, .feature-card, .result-card, .error-message').forEach(el => {
+            el.classList.add('scroll-reveal');
+            observer.observe(el);
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleParams();
+        });
+    </script>
+</body>
+</html>
