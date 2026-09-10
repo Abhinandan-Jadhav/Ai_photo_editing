@@ -358,10 +358,10 @@ Through this project, the following concepts can be learned:
 
 # 👨‍💻 Project Developers
 
-**Abhinandan Jadhav**
-**Rakshita kamble**
-**Mahesh Nesarkar**
-**Suddep H**
+**Abhinandan Jadhav,**
+**Rakshita kamble,**
+**Mahesh Nesarkar,**
+**Suddep H,**
 
 ---
 
